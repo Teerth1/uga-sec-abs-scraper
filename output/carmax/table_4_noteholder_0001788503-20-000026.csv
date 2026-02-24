@@ -1,0 +1,57 @@
+0,1,4,5,accession_number,company_name,report_period,filed_date,cik
+23.,Available Collections,$,43148956.12,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+24.,Reserve Account Draw Amount,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+25.,Available Funds,$,43148956.12,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+Application of Available Funds,Application of Available Funds,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+26.,Servicing Fee,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,a. Monthly Servicing Fee,$,1042745.12,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Amount Unpaid from Prior Months,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Amount Paid,$,1042745.12,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,d. Shortfall Amount (a + b - c),$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+27.,Unreimbursed Servicer Advances,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+28.,Successor Servicer and Asset Representations Reviewer Unpaid Expenses and Indemnity Amounts,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,"a. Successor Servicer Unpaid Transition Expenses and Indemnity Amounts (Capped at $175,000 annually)",$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Successor Servicer Amount Paid,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Successor Servicer Shortfall Amount (a - b),$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,"d. Asset Representations Reviewer Fees, Expenses and Indemnity Amounts (Capped at $175,000 annually)",$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,e. Asset Representations Reviewer Amount Paid,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,f. Asset Representations Reviewer Shortfall Amount (d - e),$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+29.,Class A Noteholder Interest Amounts,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,a. Class A-1 Monthly Interest,$,71395.2,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Additional Note Interest related to Class A-1 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Interest Due on Additional Note Interest related to Class A-1 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,d. Total Class A-1 Note Interest (sum a - c),$,71395.2,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,e. Class A-2a Monthly Interest,$,785072.5,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,f. Additional Note Interest related to Class A-2a Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,g. Interest Due on Additional Note Interest related to Class A-2a Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,h. Total Class A-2a Note Interest (sum e - g),$,785072.5,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,i. Class A-2b Monthly Interest,$,64983.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,j. Additional Note Interest related to Class A-2b Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,k. Interest Due on Additional Note Interest related to Class A-2b Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,l. Total Class A-2b Note Interest (sum i - k),$,64983.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,m. Class A-3 Monthly Interest,$,797058.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,n. Additional Note Interest related to Class A-3 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,o. Interest Due on Additional Note Interest related to Class A-3 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,p. Total Class A-3 Note Interest (sum m - o),797058.33,797058.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,q. Class A-4 Monthly Interest,$,184280.5,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,r. Additional Note Interest related to Class A-4 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,r. Additional Note Interest related to Class A-4 Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,t. Total Class A-4 Note Interest (sum q - s),$,184280.5,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+30.,Priority Principal Distributable Amount,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+31.,Class B Noteholder Interest Amount,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,a. Class B Monthly Interest,$,65424.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Additional Note Interest related to Class B Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Interest Due on Additional Note Interest related to Class B Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,d. Total Class B Note Interest (sum a - c),$,65424.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+32.,Secondary Principal Distributable Amount,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+33.,Class C Noteholder Interest Amount,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,a. Class C Monthly Interest,$,65151.67,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Additional Note Interest related to Class C Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Interest Due on Additional Note Interest related to Class C Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,d. Total Class C Note Interest (sum a - c),$,65151.67,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+34.,Tertiary Principal Distributable Amount,$,7773075.13,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+35.,Class D Noteholder Interest Amount,,,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,a. Class D Monthly Interest,$,56163.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,b. Additional Note Interest related to Class D Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,c. Interest Due on Additional Note Interest related to Class D Monthly Interest,$,0.0,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503
+,d. Total Class D Note Interest (sum a - c),$,56163.33,0001788503-20-000026,CarMax Auto Owner Trust 2019-4,20200430,20200515,0001788503

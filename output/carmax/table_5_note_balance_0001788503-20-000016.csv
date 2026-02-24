@@ -1,0 +1,53 @@
+0,1,2,3,4,6,7,8,accession_number,company_name,report_period,filed_date,cik
+Pool Balance,Pool Balance,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+1.,Pool Balance on the close of the last day of the preceding Collection Period,,,,$,1333130583.03,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+2.,Collections allocable to Principal,,,,$,38934725.15,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+3.,Purchase Amount allocable to Principal,,,,$,0.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+4.,Defaulted Receivables,,,,$,1943878.91,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+5.,Pool Balance on the close of the last day of the related Collection Period,,,,$,1292251978.97,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,(Ln1 - Ln2 - Ln3 - Ln4),,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+6.,Total number of Receivables outstanding on the close of the last day of the related Collection Period,,,,81004,81004,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+7.,Initial Pool Balance,,,,$,1503750003.50,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,,Beginning of Period,Beginning of Period,Beginning of Period,End of Period,End of Period,End of Period,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+8.,Note Balances,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,a. Class A-1 Note Balance,$,125371208.02,,$,84492603.96,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,b. Class A-2a Note Balance,$,468700000.00,,$,468700000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,c. Class A-2b Floating Rate Note Balance,$,70000000.00,,$,70000000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,d. Class A-3 Note Balance,$,473500000.00,,$,473500000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,e. Class A-4 Note Balance,$,103820000.00,,$,103820000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,f. Class B Note Balance,$,33840000.00,,$,33840000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,g. Class C Note Balance,$,30070000.00,,$,30070000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,h. Class D Note Balance,$,24070000.00,,$,24070000.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,i. Note Balance (sum a - h),$,1329371208.02,,$,1288492603.96,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+9.,Pool Factors,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,a. Class A-1 Note Pool Factor,0.4235514,0.4235514,,0.2854480,0.2854480,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,b. Class A-2a Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,c. Class A-2b Floating Rate Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,d. Class A-3 Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,e. Class A-4 Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,f. Class B Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,g. Class C Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,h. Class D Note Pool Factor,1.0000000,1.0000000,,1.0000000,1.0000000,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,i. Note Pool Factor,0.8862475,0.8862475,,0.8589951,0.8589951,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+10.,Overcollateralization Target Amount,,,,$,3759375.01,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+11.,Current overcollateralization amount (Pool Balance - Note Balance),,,,$,3759375.01,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+12.,Weighted Average Coupon,,,,8.71,8.71,%,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+13.,Weighted Average Original Term,months,months,,66.54,66.54,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+14.,Weighted Average Remaining Term,months,months,,57.72,57.72,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+15.,1-Month LIBOR for the interest period ending 11/14/2019,,,,1.65825,1.65825,%,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+16.,Note Rate applicable to the Class A-2b notes for the interest period ending 11/14/2019,,,,1.95825,1.95825,%,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+Collections,Collections,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+17.,Finance Charges:,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,a. Collections allocable to Finance Charge,,,,$,9601876.35,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,b. Liquidation Proceeds allocable to Finance Charge,,,,$,1386.87,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,c. Purchase Amount allocable to Finance Charge,,,,$,0.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,d. Available Finance Charge Collections (sum a - c),,,,$,9603263.22,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+18.,Principal:,,,,,,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,a. Collections allocable to Principal,,,,$,38934725.15,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,b. Liquidation Proceeds allocable to Principal,,,,$,620672.62,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,c. Purchase Amount allocable to Principal,,,,$,0.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+,d. Available Principal Collections (sum a - c),,,,$,39555397.77,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+19.,Total Finance Charge and Principal Collections (17d + 18d),,,,$,49158660.99,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+20.,Interest Income from Collection Account,,,,$,52434.56,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+21.,Simple Interest Advances,,,,$,0.00,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503
+22.,Available Collections (Ln19 + 20 + 21),,,,$,49211095.55,,0001788503-20-000016,CarMax Auto Owner Trust 2019-4,20200229,20200316,0001788503

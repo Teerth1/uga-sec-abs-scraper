@@ -1,6 +1,10 @@
-# Output data
-output/
+# Output data — ignore root-level CSVs but allow named issuer subfolders
+output/*
+!output/carmax/
+!output/ford/
 *.csv
+!output/carmax/*.csv
+!output/ford/*.csv
 
 # Python
 __pycache__/
