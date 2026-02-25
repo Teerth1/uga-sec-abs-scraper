@@ -17,7 +17,7 @@ OUTPUT_DIR = "output"
 
 TABLES = [
     ("table_2_available_funds",  ["available funds", "reserve account", "cash flows"]),
-    ("table_3_distributions",    ["distributions", "payment date", "collection period"]),
+    ("table_3_distributions",    ["distributions", "determination date", "payment date", "collection period"]),
     ("table_4_noteholder",       ["noteholder", "class a-1 notes", "interest distributable"]),
     ("table_5_note_balance",     ["note factor", "note balance", "principal balance"]),
 ]
@@ -426,6 +426,50 @@ def scrape_filing(url, accumulators, metadata_rows):
 # Save consolidated output
 # ---------------------------------------------------------------------------
 
+def _normalize_table3(frames):
+    """
+    Normalize all Table 3 frames to a common long schema:
+      accession_number | label | value
+
+    Issuers like Ford produce a single-value column (long format already).
+    Issuers like CarMax produce one value column per row — single period per
+    filing — but the column name encodes the period dates.
+    Both reduce to the same 3-column schema.
+    """
+    out = []
+    for df in frames:
+        acc_col = "accession_number"
+        data_cols = [c for c in df.columns if c != acc_col]
+
+        if len(data_cols) == 0:
+            continue
+
+        label_col = data_cols[0]   # always the first non-accession col
+        value_cols = data_cols[1:]
+
+        if len(value_cols) == 0:
+            # Only a label column — nothing useful
+            continue
+        elif len(value_cols) == 1:
+            # Already long: just standardize column names
+            norm = df[[acc_col, label_col, value_cols[0]]].copy()
+            norm.columns = [acc_col, "label", "value"]
+        else:
+            # Wide: melt each period-column into its own row
+            norm = df.melt(
+                id_vars=[acc_col, label_col],
+                value_vars=value_cols,
+                var_name="_period_col",   # drop this — period is encoded in the label
+                value_name="value",
+            )
+            norm = norm.rename(columns={label_col: "label"})
+            norm = norm[[acc_col, "label", "value"]]
+
+        norm = norm.dropna(subset=["value"]).reset_index(drop=True)
+        out.append(norm)
+    return out
+
+
 def save_outputs(accumulators, metadata_rows):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -437,6 +481,14 @@ def save_outputs(accumulators, metadata_rows):
         if not frames:
             print(f"  No data for {table_name}, skipping.")
             continue
+
+        # Normalize Table 3 frames to a unified long schema before concat
+        if table_name == "table_3_distributions":
+            frames = _normalize_table3(frames)
+            if not frames:
+                print(f"  No data for {table_name} after normalization, skipping.")
+                continue
+
         combined = pd.concat(frames, ignore_index=True, sort=False)
         out_path = os.path.join(OUTPUT_DIR, f"{table_name}.csv")
         combined.to_csv(out_path, index=False)
