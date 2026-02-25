@@ -2,3 +2,4 @@ pandas
 requests
 lxml
 matplotlib
+beautifulsoup4
