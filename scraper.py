@@ -16,8 +16,8 @@ import time
 OUTPUT_DIR = "output"
 
 TABLES = [
-    ("table_2_available_funds",  ["available funds", "reserve account", "cash flows"]),
-    ("table_3_distributions",    ["distributions", "determination date", "payment date", "collection period"]),
+    ("table_2_available_funds",  ["available funds", "reserve account", "cash flows", "collections"]),
+    ("table_3_distributions",    ["distributions", "determination date", "payment date", "collection period", "additional information"]),
     ("table_4_noteholder",       ["noteholder", "class a-1 notes", "interest distributable"]),
     ("table_5_note_balance",     ["note factor", "note balance", "principal balance"]),
 ]
@@ -28,74 +28,44 @@ TABLES = [
 COLUMN_ALIASES = {
     "label":                      ["label", "description", "item"],
     "dollar_amount":              ["dollar amount"],
-    "num_receivables":            ["# of receivables", "number of receivables"],
-    "wtd_avg_remaining_term":     ["weighted avg remaining term at cutoff",
-                                   "weighted average remaining term"],
-    "note_interest_rate":         ["note interest rate"],
-    "final_scheduled_payment":    ["final scheduled payment date"],
-    "collection_period":          ["collection period"],
-    "payment_date":               ["payment date"],
-    "transaction_month":          ["transaction month"],
-    "calculated_amount":          ["calculated amount"],
-    "amount_paid":                ["amount paid"],
-    "shortfall":                  ["shortfall"],
-    "carryover_shortfall":        ["carryover shortfall"],
-    "remaining_available_funds":  ["remaining available funds"],
-    "note_class":                 ["note class", "class", "notes"],
-    "bop_balance":                ["beginning of period balance", "bop balance",
-                                   "beginning balance"],
-    "bop_note_factor":            ["beginning of period note factor", "bop note factor"],
-    "eop_balance":                ["end of period balance", "eop balance", "ending balance"],
-    "eop_note_factor":            ["end of period note factor", "eop note factor"],
+    "num_receivables":            ["number of receivables"],
+    "wtd_avg_remaining_term":     ["weighted average remaining term", "avg term"],
 }
 
+# Pre-compute a lookup for faster matching
 _ALIAS_LOOKUP = {}
-for _canonical, _aliases in COLUMN_ALIASES.items():
-    for _alias in _aliases:
-        _ALIAS_LOOKUP[re.sub(r"\s+", " ", _alias.lower().strip())] = _canonical
+for canonical, aliases in COLUMN_ALIASES.items():
+    for a in aliases:
+        _ALIAS_LOOKUP[a.lower().replace(" ", "")] = canonical
+    _ALIAS_LOOKUP[canonical.lower().replace(" ", "")] = canonical
 
-
-def _norm(text):
-    return re.sub(r"\s+", " ", str(text)).lower().strip()
-
+def _norm(s):
+    return str(s).lower().strip().replace(" ", "").replace("_", "").replace("-", "").replace(":", "").replace(".", "")
 
 # ---------------------------------------------------------------------------
-# HTML table parser — width-aware, colspan-aware
+# Core parsing logic
 # ---------------------------------------------------------------------------
+
+def cell_text(cell):
+    """Clean text from a BeautifulSoup cell."""
+    t = cell.get_text(separator=" ", strip=True)
+    t = t.replace("\xa0", " ").replace("\n", " ")
+    # Replace multiple spaces with one
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
 
 def parse_html_table(table_html):
     """
-    Parse an SEC 10-D HTML table into a clean DataFrame.
-
-    Structure of these tables (verified against raw HTML):
-      Row 0  : Layout row — individual <td> cells each have a 'width:XX%' style.
-               This tells us exactly which slots are spacers (0.1%), $ markers (1%),
-               and value/label columns (wider).
-      Row 1+ : Header row(s) — cells use colspan=3 to span each logical group.
-               Bold text = column header.
-      Data rows : cells use colspan=3 for the row-label cell and colspan=1 for
-                 $ / value / spacer within each column slot.
-
-    Algorithm:
-      1. Read the layout row to get per-slot widths.
-      2. Classify each slot: SPACER (<=0.15%), DOLLAR (~1%), VALUE (>1%), LABEL (wide).
-         We keep LABEL and VALUE slots; discard DOLLAR and SPACER.
-      3. Read the header row(s) — expand colspan cells into slot indices.
-         Assign the header text to the VALUE slot(s) of each group.
-         Assign 'label' to the first LABEL slot.
-      4. For each data row expand colspans and keep only the kept slots.
-      5. Build DataFrame.
+    Parses a single SEC HTML table. 
+    Implements a 'slot-based' layout to handle complex colspans accurately.
     """
     soup = BeautifulSoup(table_html, "html.parser")
     rows = soup.find_all("tr")
     if not rows:
         return None
 
-    def cell_text(cell):
-        return re.sub(r"\s+", " ", cell.get_text(separator=" ")).strip()
-
     # ----------------------------------------------------------------
-    # Step 1: compute max_cols from the widest row (accounting for colspan)
+    # Step 1: determine max slots
     # ----------------------------------------------------------------
     max_cols = 0
     for row in rows:
@@ -298,45 +268,32 @@ def extract_metadata(raw_content):
         "cik":       r"CENTRAL INDEX KEY:\s+(.+)",
         "company":   r"COMPANY CONFORMED NAME:\s+(.+)",
         "period":    r"CONFORMED PERIOD OF REPORT:\s+(\d+)",
-        "filed_date":r"FILED AS OF DATE:\s+(\d+)",
+        "filed_date": r"FILED AS OF DATE:\s+(\d+)",
     }
-    metadata = {}
+    results = {}
     for key, pattern in patterns.items():
-        match = re.search(pattern, raw_content, re.IGNORECASE)
-        metadata[key] = match.group(1).strip() if match else "UNKNOWN"
-    return (metadata["accession"], metadata["company"],
-            metadata["period"],    metadata["filed_date"], metadata["cik"])
-
-
-# ---------------------------------------------------------------------------
-# Exhibit isolation
-# ---------------------------------------------------------------------------
+        match = re.search(pattern, raw_content)
+        results[key] = match.group(1).strip() if match else "Unknown"
+    
+    return results["accession"], results["company"], results["period"], results["filed_date"], results["cik"]
 
 def extract_exhibit_99(raw_content):
-    ex99_start = re.search(r"<TYPE>EX-99", raw_content, re.IGNORECASE)
-    if not ex99_start:
-        print("  Warning: Could not find <TYPE>EX-99. Using full content.")
-        return raw_content
-    start_pos = ex99_start.start()
-    next_doc = re.search(r"<DOCUMENT>", raw_content[start_pos + 1:], re.IGNORECASE)
-    if next_doc:
-        return raw_content[start_pos: start_pos + 1 + next_doc.start()]
-    return raw_content[start_pos:]
-
-
-# ---------------------------------------------------------------------------
-# URL loader
-# ---------------------------------------------------------------------------
+    """Fina 99.1 or equivalent exhibit (Monthly Servicer's Certificate)."""
+    # Simple strategy: look for Exhibit 99 and take everything after it
+    # until the next exhibit delimiter <DOCUMENT>.
+    match = re.search(r"<TYPE>EX-99.*?</TYPE>.*?<TEXT>(.*?)</TEXT>", raw_content, re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return raw_content
 
 def load_filing_urls(filepath):
     urls = []
     with open(filepath, "r") as f:
-        next(f)
+        # Skip header
+        f.readline()
         for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            parts = line.split("|")
+            parts = line.strip().split("|")
+            if len(parts) < 3: continue
             urls.append("https://www.sec.gov/Archives/" + parts[2])
     return urls
 
@@ -358,14 +315,14 @@ def extract_table(raw_content, anchor_texts):
             break
 
     if anchor_pos == -1:
-        print(f"    Warning: No anchors found from {anchor_texts}")
+        # print(f"    Warning: No anchors found from {anchor_texts}")
         return None
 
     table_start = full_text_lower.rfind("<table", 0, anchor_pos)
     table_end   = full_text_lower.find("</table>", anchor_pos)
 
     if table_start == -1 or table_end == -1:
-        print(f"    Warning: Could not find table tags for anchor '{used_anchor}'")
+        # print(f"    Warning: Could not find table tags for anchor '{used_anchor}'")
         return None
 
     table_html = raw_content[table_start: table_end + 8]
@@ -448,55 +405,38 @@ def _normalize_table3(frames):
         value_cols = data_cols[1:]
 
         if len(value_cols) == 0:
-            # Only a label column — nothing useful
+            # Maybe it's already long format or has only one data column.
+            # Convert to label/value.
+            temp = df.copy()
+            temp.columns = [acc_col, "label", "value"] if len(temp.columns) == 3 else temp.columns
+            out.append(temp)
             continue
-        elif len(value_cols) == 1:
-            # Already long: just standardize column names
-            norm = df[[acc_col, label_col, value_cols[0]]].copy()
-            norm.columns = [acc_col, "label", "value"]
-        else:
-            # Wide: melt each period-column into its own row
-            norm = df.melt(
-                id_vars=[acc_col, label_col],
-                value_vars=value_cols,
-                var_name="_period_col",   # drop this — period is encoded in the label
-                value_name="value",
-            )
-            norm = norm.rename(columns={label_col: "label"})
-            norm = norm[[acc_col, "label", "value"]]
 
-        norm = norm.dropna(subset=["value"]).reset_index(drop=True)
-        out.append(norm)
-    return out
+        # Melt wide into long
+        melted = df.melt(id_vars=[acc_col, label_col], value_vars=value_cols)
+        # Rename back to canonical (we lose the date in the col header but keep the label)
+        melted = melted[[acc_col, label_col, "value"]].rename(columns={label_col: "label"})
+        out.append(melted)
 
+    return pd.concat(out) if out else pd.DataFrame()
 
 def save_outputs(accumulators, metadata_rows):
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
 
-    meta_path = os.path.join(OUTPUT_DIR, "metadata.csv")
-    pd.DataFrame(metadata_rows).to_csv(meta_path, index=False)
-    print(f"Saved: {meta_path}  ({len(metadata_rows)} filings)")
+    pd.DataFrame(metadata_rows).to_csv(os.path.join(OUTPUT_DIR, "metadata.csv"), index=False)
 
-    for table_name, frames in accumulators.items():
-        if not frames:
-            print(f"  No data for {table_name}, skipping.")
-            continue
+    for name, frames in accumulators.items():
+        if not frames: continue
 
-        # Normalize Table 3 frames to a unified long schema before concat
-        if table_name == "table_3_distributions":
-            frames = _normalize_table3(frames)
-            if not frames:
-                print(f"  No data for {table_name} after normalization, skipping.")
-                continue
-
-        combined = pd.concat(frames, ignore_index=True, sort=False)
-        out_path = os.path.join(OUTPUT_DIR, f"{table_name}.csv")
-        combined.to_csv(out_path, index=False)
-        print(f"Saved: {out_path}  ({len(combined)} rows, {len(combined.columns)} cols)")
+        if name == "table_3_distributions":
+            final_df = _normalize_table3(frames)
+        else:
+            final_df = pd.concat(frames, ignore_index=True)
+            
+        final_df.to_csv(os.path.join(OUTPUT_DIR, f"{name}.csv"), index=False)
 
 
-# ---------------------------------------------------------------------------
-# Main
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
