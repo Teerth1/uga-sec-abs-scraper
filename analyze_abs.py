@@ -3,11 +3,16 @@ import matplotlib.pyplot as plt
 import os
 import random
 import numpy as np
+import re
 
 def clean_dollar(s):
     if pd.isna(s) or s == '': return 0.0
     if isinstance(s, (int, float)): return float(s)
     s = str(s).strip()
+    
+    # If the string contains any alphabetical char, it's likely a date or label
+    if re.search(r'[a-zA-Z]', s): return 0.0
+    
     is_neg = False
     if '(' in s or '-' in s: is_neg = True
     s = "".join([c for c in s if c.isdigit() or c == '.'])
@@ -50,11 +55,20 @@ def analyze():
     metadata_df['year_month'] = metadata_dt.dt.strftime('%Y-%m')
 
     funds_df = pd.read_csv('output/table_2_available_funds.csv')
-    if 'dollar_amount' not in funds_df.columns:
-        print("Error: 'dollar_amount' column missing in Table 2 output!")
-        return
 
-    funds_df['val_float'] = funds_df['dollar_amount'].apply(clean_dollar)
+    def extract_best_amount(row):
+        if 'dollar_amount' in row and pd.notna(row['dollar_amount']):
+            v = clean_dollar(row['dollar_amount'])
+            if v != 0.0: return v
+        for col in row.index[::-1]:
+            if col in ['accession_number', 'label', 'label_str']: continue
+            v = clean_dollar(row[col])
+            if v != 0.0: return v
+        return 0.0
+
+    funds_df['val_float'] = funds_df.apply(extract_best_amount, axis=1)
+    if 'label' not in funds_df.columns:
+        funds_df['label'] = ""
     funds_df['label_str'] = funds_df['label'].astype(str)
 
     # 3. Monthly Collections Aggregation
@@ -69,17 +83,14 @@ def analyze():
         'Collections allocable to Finance Charge', 'a. Collections allocable to Finance Charge'
     ]
     
-    # CarMax specific precise total: "Total Finance Charge and Principal Collections (17d + 18d)"
-    # This precisely matches Dr. Honkanen's provided data (Interest + Principal components only).
-    carmax_total_label = "Total Finance Charge and Principal Collections"
+    carmax_total_label = "Available Collections"
     ford_total_label = "Collections"
 
     funds_df['is_principal'] = funds_df['label_str'].str.contains('|'.join(p_labels), case=False, na=False)
     funds_df['is_interest'] = funds_df['label_str'].str.contains('|'.join(i_labels), case=False, na=False)
     
-    # Flags for precise total rows
     funds_df['is_precise_total'] = funds_df['label_str'].str.contains(carmax_total_label, case=False, na=False) | \
-                                   (funds_df['label_str'] == ford_total_label)
+                                   (funds_df['label_str'].str.strip() == ford_total_label)
 
     monthly_agg = funds_df.groupby('accession_number', sort=False).agg(
         scraped_principal=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal']].sum()),
@@ -88,7 +99,6 @@ def analyze():
         scraped_precise_total=('val_float', lambda x: x[funds_df.loc[x.index, 'is_precise_total']].max()),
     ).reset_index()
 
-    # Use the precise total row if found, otherwise fall back to the sum of P+I components
     monthly_agg['scraped_total_collections'] = monthly_agg.apply(
         lambda row: row['scraped_precise_total'] if row['scraped_precise_total'] > 0 else row['scraped_total_collections_sum'],
         axis=1
