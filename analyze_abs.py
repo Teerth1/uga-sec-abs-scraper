@@ -69,78 +69,69 @@ def analyze():
     funds_df['val_float'] = funds_df.apply(extract_best_amount, axis=1)
     if 'label' not in funds_df.columns:
         funds_df['label'] = ""
-    funds_df['label_str'] = funds_df['label'].astype(str)
+    funds_df['label_str'] = funds_df['label'].astype(str).str.strip()
 
-    p_labels = [
-        'Principal Collections', 'Prepayments in Full', 'Liquidation Proceeds',
-        'Recoveries', 'Purchase Amounts Related to Principal',
-        'Collections allocable to Principal',
-        'a. Collections allocable to Principal',
-        'a.  Collections allocable to Principal',
-    ]
-    i_labels = [
-        'Interest Collections', 'Purchase Amounts Related to Interest',
-        'Collections allocable to Finance Charge',
-        'a. Collections allocable to Finance Charge',
-        'a.  Collections allocable to Finance Charge',
-    ]
-    precise_labels = ["Total Finance Charge and Principal Collections"]
-    ford_total     = "Collections"
+    # For Ford: "Collections" is the single total line
+    # For CarMax: "Available Collections" minus "Reserve Account Draw Amount"
+    # For both: "Total Finance Charge and Principal Collections" if it exists
+    funds_df['is_ford_total']    = funds_df['label_str'] == 'Collections'
+    funds_df['is_avail']         = funds_df['label_str'] == 'Available Collections'
+    funds_df['is_reserve_draw']  = funds_df['label_str'] == 'Reserve Account Draw Amount'
+    funds_df['is_precise']       = funds_df['label_str'].str.contains('Total Finance Charge and Principal', case=False, na=False)
 
-    funds_df['is_principal']     = funds_df['label_str'].str.contains('|'.join(p_labels), case=False, na=False)
-    funds_df['is_interest']      = funds_df['label_str'].str.contains('|'.join(i_labels), case=False, na=False)
-    funds_df['is_precise_total'] = (
-        funds_df['label_str'].str.contains('|'.join(precise_labels), case=False, na=False) |
-        (funds_df['label_str'].str.strip() == ford_total)
-    )
+    def agg_total(grp):
+        idx = grp.index
+        ford_total   = grp[funds_df.loc[idx, 'is_ford_total']]['val_float'].max()
+        precise      = grp[funds_df.loc[idx, 'is_precise']]['val_float'].max()
+        avail        = grp[funds_df.loc[idx, 'is_avail']]['val_float'].max()
+        reserve_draw = grp[funds_df.loc[idx, 'is_reserve_draw']]['val_float'].max()
 
-    monthly_agg = funds_df.groupby('accession_number', sort=False).agg(
-        scraped_principal     = ('val_float', lambda x: x[funds_df.loc[x.index,'is_principal']].max()),
-        scraped_interest      = ('val_float', lambda x: x[funds_df.loc[x.index,'is_interest']].max()),
-        scraped_sum           = ('val_float', lambda x: (
-            x[funds_df.loc[x.index,'is_principal']].max() +
-            x[funds_df.loc[x.index,'is_interest']].max()
-        )),
-        scraped_precise_total = ('val_float', lambda x: x[funds_df.loc[x.index,'is_precise_total']].max()),
+        # Priority: precise > ford_total > avail - reserve_draw
+        if pd.notna(precise) and precise > 0:
+            return precise
+        if pd.notna(ford_total) and ford_total > 0:
+            return ford_total
+        if pd.notna(avail) and avail > 0:
+            draw = reserve_draw if pd.notna(reserve_draw) else 0.0
+            return avail - draw
+        return 0.0
+
+    monthly_agg = funds_df.groupby('accession_number').apply(
+        lambda grp: pd.Series({'scraped_total_collections': agg_total(grp)})
     ).reset_index()
-
-    monthly_agg['scraped_total_collections'] = monthly_agg.apply(
-        lambda r: r['scraped_precise_total'] if r['scraped_precise_total'] > 0 else r['scraped_sum'],
-        axis=1
-    )
 
     unified_summary = pd.merge(monthly_agg, metadata_df, on='accession_number')
     unified_summary.to_csv('output/unified_monthly_summary.csv', index=False)
     print("Saved 'output/unified_monthly_summary.csv'")
 
-    # ── 4. Repayment Structure Plots (10 random pools) ───────────────────────
+    # Quick check
+    for issuer_kw in ['FORD', 'CARMAX']:
+        sub = unified_summary[unified_summary['company_name'].str.contains(issuer_kw, case=False, na=False)]
+        print(f"  {issuer_kw}: {len(sub)} rows, avg collections = {sub['scraped_total_collections'].mean():,.0f}")
+
+    # ── 4. Repayment Structure Plots (sampled pools) ─────────────────────────
     print("Generating repayment structure plots...")
     balance_df = pd.read_csv('output/table_5_note_balance.csv')
     balance_df = pd.merge(balance_df,
                           metadata_df[['accession_number', 'company_name', 'year_month', 'report_period']],
                           on='accession_number', how='left')
 
-    # Find numeric value column: first non-label column with numeric data
-    label_col = 'label'
-    # All non-meta columns are potential value columns
     value_cols = [c for c in balance_df.columns
                   if c not in ['accession_number', 'label', 'company_name', 'year_month', 'report_period']]
 
-    # Parse a "balance" from any numeric column
     def pick_value(row):
         for vc in value_cols:
             v = clean_dollar(row.get(vc, ''))
             if v > 0: return v
         return 0.0
 
-    balance_df['balance_val'] = balance_df.apply(pick_value, axis=1)
-    balance_df['report_period_dt'] = pd.to_datetime(
+    balance_df['balance_val']       = balance_df.apply(pick_value, axis=1)
+    balance_df['report_period_dt']  = pd.to_datetime(
         balance_df['report_period'], format='%Y%m%d', errors='coerce')
-    balance_df['label_str'] = balance_df['label'].astype(str)
+    balance_df['label_str']         = balance_df['label'].astype(str)
 
-    # Only keep rows labelled with a note class (both Ford: "Class A-1 Notes" and CarMax: "a. Class A-1 Note Balance")
     note_mask = balance_df['label_str'].str.contains(
-        r'Class\s+[A-Z0-9\-]+\s*(Note|Notes|Balance)?', regex=True, case=False, na=False)
+        r'Class\s+[A-Z0-9\-]+', regex=True, case=False, na=False)
     note_balance = balance_df[note_mask].copy()
 
     all_pools = note_balance['company_name'].dropna().unique().tolist()
@@ -148,17 +139,17 @@ def analyze():
     sampled_pools = random.sample(all_pools, min(10, len(all_pools)))
 
     for pool in sampled_pools:
-        pool_data = note_balance[note_balance['company_name'] == pool].copy()
-        pool_data = pool_data.sort_values('report_period_dt')
+        pool_data = note_balance[note_balance['company_name'] == pool].sort_values('report_period_dt')
         note_classes = pool_data['label_str'].unique()
-        if not len(note_classes): continue
-
         fig, ax = plt.subplots(figsize=(12, 7))
+        plotted = 0
         for nc in note_classes:
             nc_data = pool_data[pool_data['label_str'] == nc]
             if nc_data['balance_val'].sum() == 0: continue
             ax.plot(nc_data['report_period_dt'], nc_data['balance_val'], marker='o', label=nc)
-
+            plotted += 1
+        if plotted == 0:
+            plt.close(); continue
         ax.set_title(f'Principal Balance Over Time – {pool}')
         ax.set_xlabel('Report Period')
         ax.set_ylabel('Balance (USD)')
@@ -168,7 +159,6 @@ def analyze():
         safe_name = "".join([c if c.isalnum() else '_' for c in pool.upper()])
         plt.savefig(f'repayment_structure_{safe_name}.png')
         plt.close()
-
     print(f"Generated repayment plots for {len(sampled_pools)} pools.")
 
     # ── 5. Clean-Up Call Analysis ────────────────────────────────────────────
@@ -176,24 +166,24 @@ def analyze():
     cleanup_rows = []
     for pool_name, group in unified_summary.groupby('company_name'):
         group = group.sort_values('year_month')
-        last = group.iloc[-1]
-        initial_balance = group['scraped_total_collections'].max()
+        last  = group.iloc[-1]
+        initial = group['scraped_total_collections'].max()
         last_acc = last['accession_number']
 
-        cleanup_rows_table = funds_df[
+        cleanup_table = funds_df[
             (funds_df['accession_number'] == last_acc) &
             funds_df['label_str'].str.contains('clean', case=False, na=False)
         ]
-        cleanup_amount  = cleanup_rows_table['val_float'].max() if not cleanup_rows_table.empty else 0.0
-        remaining       = last['scraped_total_collections']
-        pct             = (remaining / initial_balance * 100) if initial_balance > 0 else 0.0
+        cleanup_amt = cleanup_table['val_float'].max() if not cleanup_table.empty else 0.0
+        remaining   = last['scraped_total_collections']
+        pct         = (remaining / initial * 100) if initial > 0 else 0.0
 
         cleanup_rows.append({
-            'pool_name':             pool_name,
-            'last_filing':           last_acc,
-            'cleanup_call_amount':   cleanup_amount,
-            'remaining_balance':     remaining,
-            'initial_balance_proxy': initial_balance,
+            'pool_name':              pool_name,
+            'last_filing':            last_acc,
+            'cleanup_call_amount':    cleanup_amt,
+            'remaining_balance':      remaining,
+            'initial_balance_proxy':  initial,
             'cleanup_pct_of_initial': pct,
         })
 
@@ -214,11 +204,14 @@ def analyze():
     if not final_df.empty:
         print(f"Found {len(final_df)} matching records for plotting.")
         fig, ax = plt.subplots(figsize=(12, 8))
+        colors = {'FORD CREDIT': 'tab:orange', 'CARMAX': 'tab:blue'}
         for issuer in sorted(final_df['issuer'].unique()):
             subset = final_df[final_df['issuer'] == issuer]
             ax.scatter(subset['scraped_total_collections'],
                        subset['total_collections_provided'],
-                       label=issuer, alpha=0.7)
+                       label=issuer,
+                       color=colors.get(issuer, None),
+                       alpha=0.8, edgecolors='white', linewidths=0.4, s=60)
         all_vals = pd.concat([final_df['scraped_total_collections'],
                                final_df['total_collections_provided']])
         max_val = all_vals.max() if not all_vals.empty else 1e7
@@ -229,7 +222,7 @@ def analyze():
         ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         ax.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        plt.savefig('collections_comparison.png')
+        plt.savefig('collections_comparison.png', dpi=150)
         print("Saved 'collections_comparison.png'")
     else:
         print("No matches found!")
