@@ -76,31 +76,35 @@ def analyze():
     p_labels = [
         'Principal Collections', 'Prepayments in Full', 'Liquidation Proceeds', 
         'Recoveries', 'Purchase Amounts Related to Principal', 
-        'Collections allocable to Principal', 'a. Collections allocable to Principal'
+        'Collections allocable to Principal', 'a. Collections allocable to Principal',
+        'a.  Collections allocable to Principal'
     ]
     i_labels = [
         'Interest Collections', 'Purchase Amounts Related to Interest', 
-        'Collections allocable to Finance Charge', 'a. Collections allocable to Finance Charge'
+        'Collections allocable to Finance Charge', 'a. Collections allocable to Finance Charge',
+        'a.  Collections allocable to Finance Charge'
     ]
     
-    carmax_total_label = "Available Collections"
+    # Do not match "Available Collections" anymore because it includes Reserve Account Draw Amount
+    # Using explicit component summation for early CarMax, and "Total Finance Charge" for others
+    carmax_precise_labels = ["Total Finance Charge and Principal Collections"]
     ford_total_label = "Collections"
 
     funds_df['is_principal'] = funds_df['label_str'].str.contains('|'.join(p_labels), case=False, na=False)
     funds_df['is_interest'] = funds_df['label_str'].str.contains('|'.join(i_labels), case=False, na=False)
     
-    funds_df['is_precise_total'] = funds_df['label_str'].str.contains(carmax_total_label, case=False, na=False) | \
+    funds_df['is_precise_total'] = funds_df['label_str'].str.contains('|'.join(carmax_precise_labels), case=False, na=False) | \
                                    (funds_df['label_str'].str.strip() == ford_total_label)
 
     monthly_agg = funds_df.groupby('accession_number', sort=False).agg(
-        scraped_principal=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal']].sum()),
-        scraped_interest=('val_float', lambda x: x[funds_df.loc[x.index, 'is_interest']].sum()),
-        scraped_total_collections_sum=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal'] | funds_df.loc[x.index, 'is_interest']].sum()),
+        scraped_principal=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal']].max()),  # Use max because duplicates might exist across rows/subheaders
+        scraped_interest=('val_float', lambda x: x[funds_df.loc[x.index, 'is_interest']].max()), 
+        scraped_sum=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal']].max() + x[funds_df.loc[x.index, 'is_interest']].max()),
         scraped_precise_total=('val_float', lambda x: x[funds_df.loc[x.index, 'is_precise_total']].max()),
     ).reset_index()
 
     monthly_agg['scraped_total_collections'] = monthly_agg.apply(
-        lambda row: row['scraped_precise_total'] if row['scraped_precise_total'] > 0 else row['scraped_total_collections_sum'],
+        lambda row: row['scraped_precise_total'] if row['scraped_precise_total'] > 0 else row['scraped_sum'],
         axis=1
     )
 
