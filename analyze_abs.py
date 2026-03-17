@@ -7,10 +7,7 @@ import numpy as np
 def clean_dollar(s):
     if pd.isna(s) or s == '': return 0.0
     if isinstance(s, (int, float)): return float(s)
-    # Be super aggressive: remove anything not a digit, dot, dash or parentheses
     s = str(s).strip()
-    if not s: return 0.0
-    # Handle ($123,456.78) format
     is_neg = False
     if '(' in s or '-' in s: is_neg = True
     s = "".join([c for c in s if c.isdigit() or c == '.'])
@@ -53,20 +50,12 @@ def analyze():
     metadata_df['year_month'] = metadata_dt.dt.strftime('%Y-%m')
 
     funds_df = pd.read_csv('output/table_2_available_funds.csv')
-
-    # Aggressive mapping: if 'label' is missing or 'dollar_amount' is missing, 
-    # and we have 'Available Funds' column, treat it as the value column.
     if 'dollar_amount' not in funds_df.columns:
-        if 'Available Funds' in funds_df.columns:
-            funds_df = funds_df.rename(columns={'Available Funds': 'dollar_amount'})
-    
-    # Try to find a label column if others exist
-    if 'label' not in funds_df.columns:
-        other_cols = [c for c in funds_df.columns if c not in ['accession_number', 'dollar_amount']]
-        if other_cols:
-            funds_df = funds_df.rename(columns={other_cols[0]: 'label'})
+        print("Error: 'dollar_amount' column missing in Table 2 output!")
+        return
 
     funds_df['val_float'] = funds_df['dollar_amount'].apply(clean_dollar)
+    funds_df['label_str'] = funds_df['label'].astype(str)
 
     # 3. Monthly Collections Aggregation
     print("Aggregating monthly collections...")
@@ -79,28 +68,29 @@ def analyze():
         'Interest Collections', 'Purchase Amounts Related to Interest', 
         'Collections allocable to Finance Charge', 'a. Collections allocable to Finance Charge'
     ]
-    t_labels = [
-        'Collections', 'Available Funds - Total', 'Available Funds', 
-        'Total Finance Charge and Principal Collections', 
-        'Total Finance Charge and Principal Collections (17d + 18d)',
-        '25. Available Funds'
-    ]
     
-    # Also look for row headers in any column
-    funds_df['label_str'] = funds_df['label'].astype(str)
+    # CarMax specific precise total: "Total Finance Charge and Principal Collections (17d + 18d)"
+    # This precisely matches Dr. Honkanen's provided data (Interest + Principal components only).
+    carmax_total_label = "Total Finance Charge and Principal Collections"
+    ford_total_label = "Collections"
+
     funds_df['is_principal'] = funds_df['label_str'].str.contains('|'.join(p_labels), case=False, na=False)
     funds_df['is_interest'] = funds_df['label_str'].str.contains('|'.join(i_labels), case=False, na=False)
-    funds_df['is_total'] = funds_df['label_str'].str.contains('|'.join(t_labels), case=False, na=False)
     
+    # Flags for precise total rows
+    funds_df['is_precise_total'] = funds_df['label_str'].str.contains(carmax_total_label, case=False, na=False) | \
+                                   (funds_df['label_str'] == ford_total_label)
+
     monthly_agg = funds_df.groupby('accession_number', sort=False).agg(
         scraped_principal=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal']].sum()),
         scraped_interest=('val_float', lambda x: x[funds_df.loc[x.index, 'is_interest']].sum()),
-        scraped_total_collections_raw=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal'] | funds_df.loc[x.index, 'is_interest']].sum()),
-        scraped_available_funds=('val_float', lambda x: x[funds_df.loc[x.index, 'is_total']].sum()),
+        scraped_total_collections_sum=('val_float', lambda x: x[funds_df.loc[x.index, 'is_principal'] | funds_df.loc[x.index, 'is_interest']].sum()),
+        scraped_precise_total=('val_float', lambda x: x[funds_df.loc[x.index, 'is_precise_total']].max()),
     ).reset_index()
 
+    # Use the precise total row if found, otherwise fall back to the sum of P+I components
     monthly_agg['scraped_total_collections'] = monthly_agg.apply(
-        lambda row: row['scraped_total_collections_raw'] if row['scraped_total_collections_raw'] > 0 else row['scraped_available_funds'],
+        lambda row: row['scraped_precise_total'] if row['scraped_precise_total'] > 0 else row['scraped_total_collections_sum'],
         axis=1
     )
 
@@ -124,7 +114,6 @@ def analyze():
             subset = final_df[final_df['issuer'] == issuer]
             plt.scatter(subset['scraped_total_collections'], subset['total_collections_provided'], label=issuer, alpha=0.7)
 
-        # Diagonal line
         all_vals = pd.concat([final_df['scraped_total_collections'], final_df['total_collections_provided']])
         max_val = all_vals.max() if not all_vals.empty else 1e7
         plt.plot([0, max_val], [0, max_val], 'k--', alpha=0.3, label='Match Line')
