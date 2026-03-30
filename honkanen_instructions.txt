@@ -1,0 +1,31 @@
+# Dr. Honkanen's Instructions
+
+Paste any new emails or research notes from Dr. Honkanen below. 
+Antigravity will automatically analyze them and propose a plan.
+
+---
+[No new instructions yet. Waiting for input.]
+Hi Teerth,
+That looks great! Can you send me a complete list of the ABS pool names you have? And then can you plot this graph again with all the observations you have? 
+
+If the graph shows all the ABS pool names, there are a very large number that you still miss for some reason. Can you diagnose why it skips some? 
+
+For example these are all in the 10D list that I sent, but the names don’t appear in the graph: 
+https://www.sec.gov/Archives/edgar/data/1182534/0001193125-22-048192.txthttps://www.sec.gov/Archives/edgar/data/1182534/0001193125-22-048199.txt
+https://www.sec.gov/Archives/edgar/data/1769465/0001193125-22-013660.txt
+https://www.sec.gov/Archives/edgar/data/1878872/0001104659-24-076005.txt
+https://www.sec.gov/Archives/edgar/data/1966071/0001104659-24-053492.txt
+https://www.sec.gov/Archives/edgar/data/1966071/0001104659-24-076007.txthttps://www.sec.gov/Archives/edgar/data/1878122/0001853620-24-000146.txt
+https://www.sec.gov/Archives/edgar/data/1383094/0001193125-24-092052.txt
+https://www.sec.gov/Archives/edgar/data/1999133/0001193125-24-090986.txt
+https://www.sec.gov/Archives/edgar/data/1999133/0001193125-24-090989.txt
+
+
+In addition to the graph the with all the individual pool names, I would also like you to produce a graph by issuer: remove all the 2018-1, 2020-3, etc from the names. Then you’ll only have CARMAX, FORD, CARVANA, etc. 
+
+Can you also check that you don’t have gaps in the data, i.e. that you have a full series of monthly observations for each pool? 
+
+Keep me posted, and ask questions as soon as any arise! 
+
+Best,
+PH
