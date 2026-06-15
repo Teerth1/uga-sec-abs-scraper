@@ -1,49 +1,124 @@
 # SEC 10-D ABS Scraper & Analytics Pipeline
 
-A Python scraper and analytics suite for extracting financial data from SEC 10-D Distribution Reports for Asset-Backed Securities (ABS) and visualizing lifecycle payment schedules.
+A Python pipeline for scraping, cleaning, and analyzing auto-loan Asset-Backed Security (ABS) distribution reports filed with the SEC on Form 10-D. Built for academic research at the University of Georgia.
+
+---
 
 ## Overview
 
-This repository contains tools to extract structured data from various auto-loan ABS trusts (including Ford, CarMax, Ally, Fifth Third, Capital One, and Santander). 
+This project targets all **Auto Loan** and **Auto Lease** 10-D filings on EDGAR and extracts four standardized financial tables from each filing's Exhibit 99:
 
-It specifically targets:
-- **Table 2**: Available Funds
-- **Table 3**: Distributions  
-- **Table 4**: Noteholder Payments
-- **Table 5**: Note Balance
+| Table | Description |
+|---|---|
+| Table 2 | Available Funds / Collections |
+| Table 3 | Distributions |
+| Table 4 | Noteholder Payments |
+| Table 5 | Note Balance |
+
+Covered issuers include Ford, CarMax, Ally, Fifth Third, Capital One, Santander, Toyota, BMW, Mercedes-Benz, and more.
 
 ### Cleanup Call Analytics
-The primary analytics script (`honkanen_plots_v6.py`) focuses on isolating and analyzing **Cleanup Calls**. It extracts historical data across all scraped issuers to mathematically model and visualize:
-1. **The 10% Industry Standard**: Validating that cleanup calls are consistently executed when the initial pool size reaches ~10%.
-2. **Terminal Events**: Proving a 1:1 ratio between the Cleanup Call Amount and the Remaining Pool Balance, confirming that the call fully retires the debt.
-3. **Tranche Waterfalls**: Generating individual Case Study plots that trace the lifecycle of subordinated tranches down to their terminal cleanup call date.
+
+The primary research output focuses on **Cleanup Calls** — the early retirement of ABS trusts once the remaining pool balance falls to ~10% of the original. The analytics pipeline:
+
+1. **Validates the 10% Industry Standard** — confirms cleanup calls are consistently triggered at ~10% of initial pool balance across all issuers.
+2. **Proves the Terminal Event** — shows a 1:1 ratio between the Cleanup Call Amount and the Remaining Pool Balance, confirming full debt retirement.
+3. **Tranche Waterfalls** — generates per-trust case study plots tracing subordinated tranche lifecycles down to their cleanup call date.
+
+---
+
+## Project Structure
+
+```
+├── src/                    # Core pipeline scripts
+│   ├── scraper.py          # Multi-threaded EDGAR scraper (Tables 2–5)
+│   ├── analyze_abs.py      # Master analytics & aggregation script
+│   ├── rescrape_edgar.py   # Targeted re-scrape for missing filings
+│   ├── repair_collections.py        # Repairs malformed collections data
+│   ├── extract_cleanup_tranche_data.py  # Extracts tranche-level cleanup call data
+│   ├── final_abs_repair.py # Final post-processing repair pass
+│   ├── verify_all.py       # End-to-end output verification
+│   └── plots/
+│       ├── honkanen_plots_v7.py   # Main visualization script (latest)
+│       └── honkanen_response.py   # Response plots for Dr. Honkanen
+├── tests/
+│   ├── test_mercedes_abs.py
+│   ├── test_sec.py
+│   └── test_sec_home.py
+├── data/                   # Raw input data (large files gitignored)
+│   ├── all_10D_ABS.txt     # Full list of 10-D filing URLs from EDGAR full-text index
+│   └── all_ABS.txt         # Filtered ABS URL list
+├── deliverables/           # Outputs delivered to Dr. Honkanen
+│   ├── For_Dr_Honkanen/    # Final plots and case study CSVs
+│   ├── honkanen_deliverable_may2026.zip
+│   ├── honkanen_instructions.txt
+│   └── Table4 notes.xlsx
+├── output/                 # Generated data (gitignored)
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+**Dependencies:** `pandas`, `matplotlib`, `requests`, `lxml`, `beautifulsoup4`
+
+---
 
 ## Usage
 
-### 1. Run the Scraper
+### 1. Scrape EDGAR
+
+Fetches all 10-D filings from the URL list and writes Tables 2–5 to `output/`.
+Uses 10 parallel threads, respects the SEC's 10 RPS rate limit, and supports resuming interrupted runs.
+
 ```bash
-python scraper.py
+python src/scraper.py data/all_10D_ABS.txt
 ```
-*Outputs structured CSVs for each table into the `output/` directory.*
 
-### 2. Generate Analytics & Visualizations
+Optional — write output to a custom directory:
 ```bash
-python honkanen_plots_v6.py
-```
-*Outputs the following to `output/analysis_v6/`:*
-- Master Time-Series of all scraped collections (2006-2024)
-- Verification scatter plots
-- Time-Series of Cleanup Call ratios
-- Visual tranche-level Case Studies (`.png`) and raw pool data (`case_study_pools.csv`)
-
-## Requirements
-
-```
-pandas
-matplotlib
-requests
-lxml
+python src/scraper.py data/all_10D_ABS.txt my_output_dir/
 ```
 
-## Data Storage
-Note: Due to their size, the raw scraped `output/` directories and generated `.png` plots are explicitly ignored via `.gitignore` to keep the repository lightweight. Only the python scripts and metadata mappings are tracked.
+### 2. Analyze & Aggregate
+
+Runs the master analytics pass over the scraped CSVs.
+
+```bash
+python src/analyze_abs.py
+```
+
+### 3. Generate Plots
+
+Produces all cleanup call visualizations and case study charts into `output/analysis_v7/`.
+
+```bash
+python src/plots/honkanen_plots_v7.py
+```
+
+**Outputs:**
+- `01_scatter_by_brand.png` — Cleanup call scatter by issuer
+- `02_call_to_initial_over_time.png` — Cleanup-to-initial ratio time series
+- `03_call_to_remaining_over_time.png` — Cleanup-to-remaining ratio time series
+- `04_casestudy_*.png` — Individual tranche waterfall plots
+- `case_study_pools.csv` — Raw pool data for all case studies
+
+### 4. Verify Output
+
+```bash
+python src/verify_all.py
+```
+
+---
+
+## Notes
+
+- **Rate limiting**: The scraper sleeps 1.05s per thread × 10 threads ≈ 9.5 RPS, staying under the SEC's 10 RPS cap.
+- **Resume support**: Already-processed URLs are tracked in `output/processed_urls.txt` and skipped on re-runs.
+- **Large files**: `output/` CSVs (Tables 2–5 are 100–150 MB each) and raw input files are excluded from version control via `.gitignore`.
