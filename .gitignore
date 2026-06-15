@@ -1,12 +1,18 @@
-# Output data — ignore root-level CSVs but allow named issuer subfolders
-output/*
-!output/carmax/
-!output/ford/
-*.csv
-!output/carmax/*.csv
-!output/ford/*.csv
+# ----- Output (generated, large) -----
+output/
+!output/.gitkeep
 
-# Python
+# ----- Large raw data files -----
+data/all_10D_ABS.txt
+data/processed_urls.txt
+data/collections_dirty.csv
+
+# ----- Large CSVs -----
+*.csv
+# Allow small reference CSVs in deliverables
+!deliverables/**/*.csv
+
+# ----- Python -----
 __pycache__/
 *.py[cod]
 *$py.class
@@ -16,12 +22,12 @@ venv/
 .venv/
 env/
 
-# IDE
+# ----- IDE -----
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+# ----- OS -----
 .DS_Store
 Thumbs.db
